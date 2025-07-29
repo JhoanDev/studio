@@ -32,9 +32,10 @@ export const getModalities = async (): Promise<string[]> => {
     return new Promise(resolve => setTimeout(() => resolve(modalities), 50));
 };
 
-// TODO: Replace with Firebase Auth
-export const findUserByLogin = async (login: string): Promise<User | undefined> => {
-    const q = query(collection(db, "users"), where("login", "==", login));
+// Esta função agora busca o usuário pelo e-mail, que é o identificador no Firebase Auth.
+export const findUserByEmail = async (email: string): Promise<User | undefined> => {
+    if (!email) return undefined;
+    const q = query(collection(db, "users"), where("email", "==", email));
     const querySnapshot = await getDocs(q);
     if (querySnapshot.empty) {
         return undefined;

@@ -8,13 +8,15 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { findUserByLogin } from '@/lib/data';
+import { findUserByEmail } from '@/lib/data';
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 
 const formSchema = z.object({
-  login: z.string().min(1, { message: 'O login é obrigatório.' }),
-  password: z.string().min(1, { message: 'A senha é obrigatória.' }),
+  email: z.string().email({ message: 'Por favor, insira um e-mail válido.' }),
+  password: z.string().min(6, { message: 'A senha deve ter no mínimo 6 caracteres.' }),
 });
 
 export function LoginForm() {
@@ -25,37 +27,54 @@ export function LoginForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      login: '',
+      email: '',
       password: '',
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
-    // In a real app, you'd call an API. Here we use mock data.
-    const user = await findUserByLogin(values.login);
-    
-    // Simulate password check & network delay
-    setTimeout(() => {
-      if (user) { // Assuming any password is correct for the demo
+    try {
+      // 1. Autenticar com Firebase
+      const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
+      const firebaseUser = userCredential.user;
+
+      // 2. Buscar dados do usuário no Firestore
+      const appUser = await findUserByEmail(firebaseUser.email);
+
+      if (appUser) {
         toast({
           title: 'Login bem-sucedido!',
-          description: `Bem-vindo(a), ${user.nome}.`,
+          description: `Bem-vindo(a), ${appUser.nome}.`,
         });
-        if (user.role === 'ADMIN') {
+        
+        // 3. Redirecionar com base na role
+        if (appUser.role === 'ADMIN') {
           router.push('/admin/dashboard');
         } else {
           router.push('/monitor/dashboard');
         }
       } else {
+        // Isso não deveria acontecer se os dados estiverem sincronizados
+        throw new Error("Usuário autenticado não encontrado no banco de dados.");
+      }
+
+    } catch (error: any) {
+        let description = 'Ocorreu um erro inesperado.';
+        // Mapeia os erros comuns do Firebase para mensagens amigáveis
+        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+            description = 'E-mail ou senha inválidos.';
+        } else if (error.code === 'auth/invalid-email') {
+            description = 'O formato do e-mail é inválido.';
+        }
+      
         toast({
-          variant: 'destructive',
-          title: 'Erro de login',
-          description: 'Usuário ou senha inválidos.',
+            variant: 'destructive',
+            title: 'Erro de login',
+            description: description,
         });
         setIsLoading(false);
-      }
-    }, 1000);
+    }
   }
 
   return (
@@ -63,12 +82,12 @@ export function LoginForm() {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
-          name="login"
+          name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Usuário</FormLabel>
+              <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder="seu.usuario" {...field} />
+                <Input placeholder="seu@email.com" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

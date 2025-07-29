@@ -20,10 +20,10 @@ export interface Announcement {
   monitorId: string;
 }
 
+// O campo login foi removido pois usaremos o e-mail para autenticação
 export interface User {
   id: string;
   nome: string;
-  login: string;
   email: string;
   role: 'ADMIN' | 'MONITOR';
 }

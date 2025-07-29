@@ -119,7 +119,6 @@ export function AdminTabs({ activities: initialActivities, monitors: initialMoni
                         <TableRow>
                         <TableHead>Nome</TableHead>
                         <TableHead className="hidden md:table-cell">Email</TableHead>
-                        <TableHead className="hidden lg:table-cell">Login</TableHead>
                         <TableHead className="text-right">Ações</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -131,7 +130,6 @@ export function AdminTabs({ activities: initialActivities, monitors: initialMoni
                                 <div className="text-sm text-muted-foreground md:hidden">{monitor.email}</div>
                             </TableCell>
                             <TableCell className="hidden md:table-cell">{monitor.email}</TableCell>
-                            <TableCell className="hidden lg:table-cell"><Badge variant="secondary">{monitor.login}</Badge></TableCell>
                             <TableCell className="text-right">
                               <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
