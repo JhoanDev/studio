@@ -1,6 +1,6 @@
 import { DashboardHeader } from '@/components/DashboardHeader';
 import { MonitorTabs } from '@/components/dashboard/MonitorTabs';
-import { getActivities, getAnnouncements, getUsers } from '@/lib/data';
+import { getActivities, getAnnouncements, getUsers, getModalities } from '@/lib/data';
 import type { User } from '@/lib/types';
 
 // This is a placeholder for a real authentication check.
@@ -20,6 +20,7 @@ export default async function MonitorDashboardPage() {
     const user = await getMonitorUser();
     const allActivities = await getActivities();
     const allAnnouncements = await getAnnouncements();
+    const modalities = await getModalities();
 
     const myActivities = allActivities.filter(a => a.monitorId === user.id);
     const myAnnouncements = allAnnouncements.filter(a => a.monitorId === user.id);
@@ -29,7 +30,11 @@ export default async function MonitorDashboardPage() {
         <div className="min-h-screen bg-background">
             <DashboardHeader user={user} title="Painel do Monitor" />
             <main className="container mx-auto px-4 py-8">
-                <MonitorTabs activities={myActivities} announcements={myAnnouncements} />
+                <MonitorTabs 
+                    activities={myActivities} 
+                    announcements={myAnnouncements}
+                    modalities={modalities}
+                />
             </main>
         </div>
     );
