@@ -27,6 +27,7 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { ActivityForm } from './ActivityForm';
+import { AnnouncementForm } from './AnnouncementForm';
 import { useToast } from '@/hooks/use-toast';
 
 interface MonitorTabsProps {
@@ -44,21 +45,26 @@ const statusVariantMap: { [key: string]: 'default' | 'secondary' | 'destructive'
 export function MonitorTabs({ activities: initialActivities, announcements: initialAnnouncements, modalities }: MonitorTabsProps) {
   const [activities, setActivities] = useState<Activity[]>(initialActivities);
   const [announcements, setAnnouncements] = useState<Announcement[]>(initialAnnouncements);
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  
+  const [isActivityFormOpen, setIsActivityFormOpen] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+
+  const [isAnnouncementFormOpen, setIsAnnouncementFormOpen] = useState(false);
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
+
   const { toast } = useToast();
 
-  const handleEdit = (activity: Activity) => {
+  const handleEditActivity = (activity: Activity) => {
     setSelectedActivity(activity);
-    setIsFormOpen(true);
+    setIsActivityFormOpen(true);
   };
 
-  const handleCreate = () => {
+  const handleCreateActivity = () => {
     setSelectedActivity(null);
-    setIsFormOpen(true);
+    setIsActivityFormOpen(true);
   };
 
-  const handleDelete = (activityId: string) => {
+  const handleDeleteActivity = (activityId: string) => {
     // In a real app, you'd call an API here.
     setActivities(prev => prev.filter(act => act.id !== activityId));
     toast({
@@ -67,7 +73,7 @@ export function MonitorTabs({ activities: initialActivities, announcements: init
     });
   };
 
-  const handleFormSubmit = (values: Omit<Activity, 'id' | 'status' | 'monitorId' | 'monitorName'>) => {
+  const handleActivityFormSubmit = (values: Omit<Activity, 'id' | 'status' | 'monitorId' | 'monitorName'>) => {
     // In a real app, you'd call an API here.
     if (selectedActivity) {
       // Update existing activity
@@ -91,9 +97,48 @@ export function MonitorTabs({ activities: initialActivities, announcements: init
         description: "Sua atividade foi criada e enviada para aprovação.",
       });
     }
-    setIsFormOpen(false);
+    setIsActivityFormOpen(false);
     setSelectedActivity(null);
   }
+
+  // Handlers for Announcements
+    const handleCreateAnnouncement = () => {
+        setSelectedAnnouncement(null);
+        setIsAnnouncementFormOpen(true);
+    };
+
+    const handleEditAnnouncement = (announcement: Announcement) => {
+        setSelectedAnnouncement(announcement);
+        setIsAnnouncementFormOpen(true);
+    };
+
+    const handleAnnouncementFormSubmit = (values: Omit<Announcement, 'id' | 'monitorId' | 'dataPublicacao'>) => {
+        // Mock logic
+        if (selectedAnnouncement) {
+            const updatedAnnouncement = {
+                ...selectedAnnouncement,
+                ...values,
+            };
+            setAnnouncements(prev => prev.map(ann => ann.id === selectedAnnouncement.id ? updatedAnnouncement : ann));
+            toast({ title: 'Aviso atualizado com sucesso!' });
+        } else {
+            const newAnnouncement: Announcement = {
+                id: `ann${Date.now()}`,
+                ...values,
+                dataPublicacao: new Date().toISOString(),
+                monitorId: 'monitor1', // placeholder
+            };
+            setAnnouncements(prev => [newAnnouncement, ...prev]);
+            toast({ title: 'Aviso publicado com sucesso!' });
+        }
+        setIsAnnouncementFormOpen(false);
+    };
+
+    const handleDeleteAnnouncement = (id: string) => {
+        setAnnouncements(prev => prev.filter(ann => ann.id !== id));
+        toast({ title: 'Aviso removido!' });
+    };
+
 
   return (
     <>
@@ -110,7 +155,7 @@ export function MonitorTabs({ activities: initialActivities, announcements: init
                 <CardTitle>Minhas Atividades</CardTitle>
                 <CardDescription>Cadastre e gerencie suas atividades esportivas.</CardDescription>
               </div>
-              <Button onClick={handleCreate}>
+              <Button onClick={handleCreateActivity}>
                   <PlusCircle className="mr-2 h-4 w-4"/>
                   Cadastrar Atividade
               </Button>
@@ -144,7 +189,7 @@ export function MonitorTabs({ activities: initialActivities, announcements: init
                                 </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => handleEdit(activity)} disabled={activity.status === 'APROVADO'}>
+                                <DropdownMenuItem onClick={() => handleEditActivity(activity)} disabled={activity.status === 'APROVADO'}>
                                     <Edit className="mr-2 h-4 w-4" />
                                     <span>Editar</span>
                                 </DropdownMenuItem>
@@ -166,7 +211,7 @@ export function MonitorTabs({ activities: initialActivities, announcements: init
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                 <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDelete(activity.id)} className="bg-destructive hover:bg-destructive/90">Sim, remover</AlertDialogAction>
+                                <AlertDialogAction onClick={() => handleDeleteActivity(activity.id)} className="bg-destructive hover:bg-destructive/90">Sim, remover</AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                           </AlertDialog>
@@ -193,7 +238,7 @@ export function MonitorTabs({ activities: initialActivities, announcements: init
                 <CardTitle>Meus Avisos</CardTitle>
                 <CardDescription>Publique e gerencie avisos para suas modalidades.</CardDescription>
               </div>
-              <Button>
+              <Button onClick={handleCreateAnnouncement}>
                   <Megaphone className="mr-2 h-4 w-4"/>
                   Publicar Aviso
               </Button>
@@ -218,25 +263,41 @@ export function MonitorTabs({ activities: initialActivities, announcements: init
                             </TableCell>
                             <TableCell>{new Date(announcement.dataPublicacao).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</TableCell>
                             <TableCell className="text-right">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="h-8 w-8 p-0">
-                                        <span className="sr-only">Abrir menu</span>
-                                        <MoreVertical className="h-4 w-4" />
-                                    </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                    <DropdownMenuItem>
-                                        <Edit className="mr-2 h-4 w-4" />
-                                        Editar
-                                    </DropdownMenuItem>
-                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem className="text-red-600 focus:text-red-600 focus:bg-red-50">
-                                        <Trash2 className="mr-2 h-4 w-4" />
-                                        Remover
-                                    </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                                <AlertDialog>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" className="h-8 w-8 p-0">
+                                            <span className="sr-only">Abrir menu</span>
+                                            <MoreVertical className="h-4 w-4" />
+                                        </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                        <DropdownMenuItem onClick={() => handleEditAnnouncement(announcement)}>
+                                            <Edit className="mr-2 h-4 w-4" />
+                                            Editar
+                                        </DropdownMenuItem>
+                                        <DropdownMenuSeparator />
+                                            <AlertDialogTrigger asChild>
+                                                <button className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 text-red-600 hover:bg-red-50 w-full disabled:text-muted-foreground disabled:hover:bg-transparent">
+                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                    Remover
+                                                </button>
+                                            </AlertDialogTrigger>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                        <AlertDialogTitle>Você tem certeza absoluta?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            Essa ação não pode ser desfeita. Isso irá remover permanentemente o aviso.
+                                        </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDeleteAnnouncement(announcement.id)} className="bg-destructive hover:bg-destructive/90">Sim, remover</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
                             </TableCell>
                         </TableRow>
                         )) : (
@@ -254,10 +315,17 @@ export function MonitorTabs({ activities: initialActivities, announcements: init
         </TabsContent>
       </Tabs>
        <ActivityForm 
-        isOpen={isFormOpen}
-        onOpenChange={setIsFormOpen}
-        onSubmit={handleFormSubmit}
+        isOpen={isActivityFormOpen}
+        onOpenChange={setIsActivityFormOpen}
+        onSubmit={handleActivityFormSubmit}
         activity={selectedActivity}
+        modalities={modalities}
+      />
+      <AnnouncementForm
+        isOpen={isAnnouncementFormOpen}
+        onOpenChange={setIsAnnouncementFormOpen}
+        onSubmit={handleAnnouncementFormSubmit}
+        announcement={selectedAnnouncement}
         modalities={modalities}
       />
     </>

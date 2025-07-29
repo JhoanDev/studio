@@ -1,10 +1,9 @@
+'use server';
 // IMPORTANT: This file is used for DEMO purposes only.
 // In a real production application, you would use database migrations or a dedicated admin panel for this.
-'use server';
 import { collection, getDocs, limit, query, addDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import type { User, Activity, Announcement } from './types';
-import { initialModalities } from './data';
 
 // --- SEED DATA ---
 

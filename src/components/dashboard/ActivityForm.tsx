@@ -33,14 +33,28 @@ import type { Activity } from '@/lib/types';
 import { useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 
-const formSchema = z.object({
+const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+
+const activityFormSchema = z.object({
   modalidade: z.string().min(1, 'Selecione uma modalidade.'),
   diaSemana: z.string().min(1, 'O dia da semana é obrigatório.'),
-  horaInicio: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Formato de hora inválido (HH:MM).'),
-  horaFim: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Formato de hora inválido (HH:MM).'),
+  horaInicio: z.string().regex(timeRegex, 'Formato de hora inválido (HH:MM).'),
+  horaFim: z.string().regex(timeRegex, 'Formato de hora inválido (HH:MM).'),
+}).refine(data => {
+    // Validação para garantir que a hora de fim é maior que a hora de início
+    const [startHour, startMinute] = data.horaInicio.split(':').map(Number);
+    const [endHour, endMinute] = data.horaFim.split(':').map(Number);
+    if (endHour < startHour || (endHour === startHour && endMinute <= startMinute)) {
+        return false;
+    }
+    return true;
+}, {
+    message: "A hora de fim deve ser posterior à hora de início.",
+    path: ["horaFim"], // Campo onde o erro será exibido
 });
 
-type ActivityFormValues = z.infer<typeof formSchema>;
+
+type ActivityFormValues = z.infer<typeof activityFormSchema>;
 
 interface ActivityFormProps {
   isOpen: boolean;
@@ -62,7 +76,7 @@ const weekDays = [
 
 export function ActivityForm({ isOpen, onOpenChange, onSubmit, activity, modalities }: ActivityFormProps) {
   const form = useForm<ActivityFormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(activityFormSchema),
     defaultValues: {
       modalidade: '',
       diaSemana: '',
