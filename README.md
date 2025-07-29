@@ -1,80 +1,113 @@
 # UniMonitor Esporte
 
-Este é um PWA (Progressive Web App) responsivo para a gestão e divulgação de atividades esportivas universitárias.
+## 🚀 Sobre o Projeto
 
-O projeto foi construído com Next.js, TypeScript e Tailwind CSS, e utiliza o Firebase como backend para autenticação e banco de dados (Firestore).
+O **UniMonitor Esporte** é um Progressive Web App (PWA) responsivo desenvolvido para a gestão e divulgação de atividades esportivas em um ambiente universitário. A plataforma centraliza o cronograma de atividades, permitindo que estudantes visualizem os horários e que monitores e administradores gerenciem o conteúdo de forma eficiente.
 
-## Sumário
+Para fins de demonstração e para simplificar a avaliação em um contexto acadêmico, o projeto utiliza um sistema de login simulado que autentica os usuários diretamente com base nos dados armazenados no **Firebase Firestore**, contornando o setup do Firebase Authentication.
 
-- [Tecnologias Utilizadas](#tecnologias-utilizadas)
-- [Funcionalidades](#funcionalidades)
-- [Como Executar o Projeto](#como-executar-o-projeto)
-  - [Pré-requisitos](#pré-requisitos)
-  - [Passos para Execução](#passos-para-execução)
-- [Como Testar a Aplicação](#como-testar-a-aplicação)
-  - [Acesso Público (Estudante)](#acesso-público-estudante)
-  - [Acesso Restrito (Perfis com Login)](#acesso-restrito-perfis-com-login)
+---
 
-## Tecnologias Utilizadas
+## ✨ Funcionalidades Principais
 
-- **Frontend:** Next.js, React, TypeScript
-- **Estilização:** Tailwind CSS, ShadCN UI
-- **Backend & Banco de Dados:** Firebase (Authentication e Firestore)
-- **Validação de Formulários:** Zod, React Hook Form
+-   **Painel Público:** Visitantes e estudantes podem visualizar o cronograma de atividades aprovadas e os avisos gerais. Um filtro por modalidade permite encontrar rapidamente as atividades desejadas.
+-   **Painel do Monitor:** Monitores podem se autenticar para gerenciar suas próprias atividades e avisos.
+    -   Cadastrar, editar e remover atividades (que ficam com status "PENDENTE" até a aprovação).
+    -   Publicar, editar e remover avisos para suas modalidades.
+-   **Painel do Administrador:** Administradores possuem uma visão geral do sistema.
+    -   Aprovar ou reprovar atividades submetidas pelos monitores.
+    -   Gerenciar os monitores cadastrados no sistema.
 
-## Funcionalidades
+---
 
-- **Visualização Pública:** Qualquer visitante pode ver as atividades aprovadas e os avisos.
-- **Painel do Monitor:** Monitores podem se logar para cadastrar, editar e remover suas atividades e avisos. As atividades submetidas ficam com status "PENDENTE" até serem aprovadas.
-- **Painel do Administrador:** Administradores podem aprovar ou reprovar as atividades pendentes e gerenciar os monitores do sistema.
+## 🛠️ Tecnologias Utilizadas
 
-## Como Executar o Projeto
+Este projeto foi construído com uma stack moderna focada em performance e produtividade:
+
+-   **Frontend:** [Next.js](https://nextjs.org/) (com App Router), [React](https://react.dev/), [TypeScript](https://www.typescriptlang.org/)
+-   **Estilização:** [Tailwind CSS](https://tailwindcss.com/), [ShadCN UI](https://ui.shadcn.com/)
+-   **Backend & Banco de Dados:** [Firebase](https://firebase.google.com/) (usando exclusivamente o **Firestore** para dados e login simulado)
+-   **Validação de Formulários:** [Zod](https://zod.dev/), [React Hook Form](https://react-hook-form.com/)
+
+---
+
+## ⚙️ Como Executar o Projeto
 
 ### Pré-requisitos
 
-- Node.js e npm (ou um gerenciador de pacotes compatível).
-- Um projeto Firebase configurado com as credenciais presentes em `src/lib/firebase.ts`.
+Antes de começar, certifique-se de ter os seguintes softwares instalados:
+-   [Node.js](https://nodejs.org/en) (versão 18 ou superior)
+-   npm ou um gerenciador de pacotes compatível (Yarn, pnpm)
 
 ### Passos para Execução
 
-1.  **Configure o Firebase Authentication:**
-    - Acesse o [Console do Firebase](https://console.firebase.google.com/).
-    - Navegue até a seção **Authentication** e ative o provedor **"E-mail/senha"**.
-    - Crie os usuários de teste (veja a seção "Como Testar" abaixo).
+1.  **Clone o repositório:**
+    ```bash
+    git clone https://github.com/seu-usuario/unimonitor-esporte.git
+    cd unimonitor-esporte
+    ```
 
 2.  **Instale as dependências:**
     ```bash
     npm install
     ```
 
-3.  **Inicie o servidor de desenvolvimento:**
+3.  **Configure o Firebase:**
+    -   Crie um novo projeto no [Console do Firebase](https://console.firebase.google.com/).
+    -   No seu projeto, vá para a seção **Firestore Database** e crie um banco de dados.
+    -   Na aba **Regras** do Firestore, altere as regras para permitir leitura e escrita para desenvolvimento. **Atenção: não use estas regras em produção.**
+        ```
+        rules_version = '2';
+        service cloud.firestore {
+          match /databases/{database}/documents {
+            match /{document=**} {
+              allow read, write: if true;
+            }
+          }
+        }
+        ```
+    -   Copie as credenciais do seu projeto Firebase (encontradas em *Configurações do projeto > Geral > Seus aplicativos > SDK do Firebase*) e cole-as no arquivo `src/lib/firebase.ts`.
+
+4.  **Inicie o servidor de desenvolvimento:**
     ```bash
     npm run dev
     ```
-    A aplicação estará disponível em [http://localhost:9002](http://localhost:9002).
+    A aplicação estará disponível em `http://localhost:9002`.
 
-## Como Testar a Aplicação
+    Na primeira vez que a aplicação for executada com o banco de dados vazio, ela será automaticamente populada com dados de teste.
 
-A aplicação possui um script que popula o banco de dados Firestore com dados de teste na primeira execução (se a coleção `users` estiver vazia). Para o login funcionar, você **precisa criar os seguintes usuários no Firebase Authentication** com as senhas de sua preferência.
+---
 
-### Acesso Público (Estudante)
+## 🧪 Como Testar a Aplicação
 
--   Acesse a página inicial ([http://localhost:9002](http://localhost:9002)) para visualizar as atividades aprovadas e os avisos.
--   Use o filtro para ver atividades de modalidades específicas.
+A aplicação possui três perfis de acesso. Para testar o login, utilize as credenciais abaixo na página `http://localhost:9002/login`.
 
-### Acesso Restrito (Perfis com Login)
+**Senha padrão para todos os usuários:** `123`
 
-Acesse a página de login em [http://localhost:9002/login](http://localhost:9002/login).
+### 👨‍🎓 Acesso Público (Estudante)
 
-#### 🧑‍🏫 Monitor
+-   **Como acessar:** Basta abrir a página inicial (`http://localhost:9002`).
+-   **O que testar:** Visualizar a lista de atividades aprovadas e os avisos. Utilizar o filtro para selecionar modalidades específicas e ver a atualização da lista em tempo real.
 
--   **E-mail:** `carlos.p@unimonitor.com` | **Senha:** (a que você definiu no Firebase)
--   **E-mail:** `ana.s@unimonitor.com` | **Senha:** (a que você definiu no Firebase)
+### 🧑‍🏫 Acesso do Monitor
+
+-   **Credenciais:**
+    -   E-mail: `carlos.p@unimonitor.com` | Senha: `123`
+    -   E-mail: `ana.s@unimonitor.com` | Senha: `123`
 -   **Redireciona para:** `/monitor/dashboard`
--   **O que testar:** Cadastrar, editar e remover atividades e avisos.
+-   **O que testar:**
+    -   Cadastrar uma nova atividade (ela deve aparecer na lista com status "PENDENTE").
+    -   Tentar editar uma atividade aprovada (o botão deve estar desabilitado).
+    -   Remover uma atividade.
+    -   Publicar, editar e remover um aviso.
 
-#### ✅ Administrador
+### ✅ Acesso do Administrador
 
--   **E-mail:** `admin@unimonitor.com` | **Senha:** (a que você definiu no Firebase)
+-   **Credenciais:**
+    -   E-mail: `admin@unimonitor.com` | Senha: `123`
 -   **Redireciona para:** `/admin/dashboard`
--   **O que testar:** Aprovar e reprovar atividades pendentes.
+-   **O que testar:**
+    -   Na aba "Aprovar Atividades", visualizar a atividade pendente criada pelo monitor.
+    -   Aprovar a atividade (ela deve desaparecer da lista de pendentes e aparecer na página inicial).
+    -   Reprovar uma atividade.
+    -   Navegar para a aba "Gerenciar Monitores" para ver a lista de monitores.
