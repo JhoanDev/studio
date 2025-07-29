@@ -34,7 +34,6 @@ export const getModalities = async (): Promise<string[]> => {
     return new Promise(resolve => setTimeout(() => resolve(initialModalities), 50));
 };
 
-// Esta função agora busca o usuário pelo e-mail, que é o identificador no Firebase Auth.
 export const findUserByEmail = async (email: string | null | undefined): Promise<User | undefined> => {
     if (!email) return undefined;
     const q = query(collection(db, "users"), where("email", "==", email));
@@ -45,7 +44,6 @@ export const findUserByEmail = async (email: string | null | undefined): Promise
     const userDoc = querySnapshot.docs[0];
     return { id: userDoc.id, ...userDoc.data() } as User;
 }
-
 
 // --- Funções de Escrita ---
 

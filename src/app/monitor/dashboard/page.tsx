@@ -3,11 +3,9 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
 import { DashboardHeader } from '@/components/DashboardHeader';
 import { MonitorTabs } from '@/components/dashboard/MonitorTabs';
-import { getActivities, getAnnouncements, findUserByEmail, getModalities } from '@/lib/data';
+import { getActivities, getAnnouncements, getModalities } from '@/lib/data';
 import type { User, Activity, Announcement } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -21,31 +19,27 @@ export default function MonitorDashboardPage() {
     const router = useRouter();
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-            if (firebaseUser) {
-                const appUser = await findUserByEmail(firebaseUser.email);
-                if (appUser && appUser.role === 'MONITOR') {
-                    setUser(appUser);
-                    const [allActivities, allAnnouncements, modalitiesData] = await Promise.all([
-                        getActivities(),
-                        getAnnouncements(),
-                        getModalities()
-                    ]);
-
+        const storedUser = sessionStorage.getItem('user');
+        if (storedUser) {
+            const appUser: User = JSON.parse(storedUser);
+            if (appUser && appUser.role === 'MONITOR') {
+                setUser(appUser);
+                Promise.all([
+                    getActivities(),
+                    getAnnouncements(),
+                    getModalities()
+                ]).then(([allActivities, allAnnouncements, modalitiesData]) => {
                     setActivities(allActivities.filter(a => a.monitorId === appUser.id));
                     setAnnouncements(allAnnouncements.filter(a => a.monitorId === appUser.id));
                     setModalities(modalitiesData);
-
-                } else {
-                    router.push('/login');
-                }
+                    setLoading(false);
+                });
             } else {
                 router.push('/login');
             }
-            setLoading(false);
-        });
-
-        return () => unsubscribe();
+        } else {
+            router.push('/login');
+        }
     }, [router]);
 
     if (loading || !user) {

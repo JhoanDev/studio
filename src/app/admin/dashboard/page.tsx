@@ -3,11 +3,9 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
 import { DashboardHeader } from '@/components/DashboardHeader';
 import { AdminTabs } from '@/components/dashboard/AdminTabs';
-import { getActivities, getUsers, findUserByEmail } from '@/lib/data';
+import { getActivities, getUsers } from '@/lib/data';
 import type { User, Activity } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -20,27 +18,25 @@ export default function AdminDashboardPage() {
     const router = useRouter();
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-            if (firebaseUser) {
-                const appUser = await findUserByEmail(firebaseUser.email);
-                if (appUser && appUser.role === 'ADMIN') {
-                    setUser(appUser);
-                    const [activitiesData, allUsers] = await Promise.all([
-                        getActivities(),
-                        getUsers(),
-                    ]);
-                    setActivities(activitiesData);
-                    setMonitors(allUsers.filter(u => u.role === 'MONITOR'));
-                } else {
-                    router.push('/login');
-                }
-            } else {
-                router.push('/login');
-            }
-            setLoading(false);
-        });
-
-        return () => unsubscribe();
+      const storedUser = sessionStorage.getItem('user');
+      if (storedUser) {
+        const appUser: User = JSON.parse(storedUser);
+        if (appUser && appUser.role === 'ADMIN') {
+          setUser(appUser);
+          Promise.all([
+              getActivities(),
+              getUsers(),
+          ]).then(([activitiesData, allUsers]) => {
+              setActivities(activitiesData);
+              setMonitors(allUsers.filter(u => u.role === 'MONITOR'));
+              setLoading(false);
+          });
+        } else {
+          router.push('/login');
+        }
+      } else {
+        router.push('/login');
+      }
     }, [router]);
 
     if (loading || !user) {

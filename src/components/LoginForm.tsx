@@ -11,13 +11,21 @@ import { useToast } from '@/hooks/use-toast';
 import { findUserByEmail } from '@/lib/data';
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Por favor, insira um e-mail válido.' }),
-  password: z.string().min(6, { message: 'A senha deve ter no mínimo 6 caracteres.' }),
+  password: z.string().min(1, { message: 'A senha é obrigatória.' }),
 });
+
+// Mock de autenticação inseguro para fins de teste
+async function signInUnsafe(values: z.infer<typeof formSchema>) {
+    const appUser = await findUserByEmail(values.email);
+
+    if (!appUser || appUser.senha !== values.password) {
+        throw new Error("Credenciais inválidas");
+    }
+    return appUser;
+}
 
 export function LoginForm() {
   const router = useRouter();
@@ -35,43 +43,29 @@ export function LoginForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      // 1. Autenticar com Firebase
-      const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
-      const firebaseUser = userCredential.user;
+      // Usar a função de login "insegura"
+      const appUser = await signInUnsafe(values);
 
-      // 2. Buscar dados do usuário no Firestore
-      const appUser = await findUserByEmail(firebaseUser.email);
-
-      if (appUser) {
-        toast({
-          title: 'Login bem-sucedido!',
-          description: `Bem-vindo(a), ${appUser.nome}.`,
-        });
-        
-        // 3. Redirecionar com base na role
-        if (appUser.role === 'ADMIN') {
-          router.push('/admin/dashboard');
-        } else {
-          router.push('/monitor/dashboard');
-        }
+      toast({
+        title: 'Login bem-sucedido!',
+        description: `Bem-vindo(a), ${appUser.nome}.`,
+      });
+      
+      // Armazenar dados do usuário no sessionStorage para persistir entre as páginas
+      sessionStorage.setItem('user', JSON.stringify(appUser));
+      
+      // Redirecionar com base na role
+      if (appUser.role === 'ADMIN') {
+        router.push('/admin/dashboard');
       } else {
-        // Isso não deveria acontecer se os dados estiverem sincronizados
-        throw new Error("Usuário autenticado não encontrado no banco de dados.");
+        router.push('/monitor/dashboard');
       }
 
     } catch (error: any) {
-        let description = 'Ocorreu um erro inesperado.';
-        // Mapeia os erros comuns do Firebase para mensagens amigáveis
-        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-            description = 'E-mail ou senha inválidos.';
-        } else if (error.code === 'auth/invalid-email') {
-            description = 'O formato do e-mail é inválido.';
-        }
-      
         toast({
             variant: 'destructive',
             title: 'Erro de login',
-            description: description,
+            description: 'E-mail ou senha inválidos.',
         });
         setIsLoading(false);
     }

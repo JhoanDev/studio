@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { LogOut, UserCircle } from 'lucide-react';
 import type { User } from '@/lib/types';
@@ -9,6 +10,13 @@ interface DashboardHeaderProps {
 }
 
 export function DashboardHeader({ user, title }: DashboardHeaderProps) {
+  const router = useRouter();
+
+  const handleLogout = () => {
+    sessionStorage.removeItem('user');
+    router.push('/login');
+  };
+
   return (
     <header className="bg-card border-b sticky top-0 z-40">
       <div className="container mx-auto px-4">
@@ -21,11 +29,9 @@ export function DashboardHeader({ user, title }: DashboardHeaderProps) {
               <UserCircle className="h-5 w-5" />
               <span>{user.nome}</span>
             </div>
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/">
-                <LogOut className="mr-2 h-4 w-4" />
-                Sair
-              </Link>
+            <Button variant="ghost" size="sm" onClick={handleLogout}>
+              <LogOut className="mr-2 h-4 w-4" />
+              Sair
             </Button>
           </div>
         </div>

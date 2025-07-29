@@ -26,4 +26,5 @@ export interface User {
   nome: string;
   email: string;
   role: 'ADMIN' | 'MONITOR';
+  senha?: string; // Adicionado para login inseguro de teste
 }
