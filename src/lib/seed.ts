@@ -39,40 +39,38 @@ export async function seedDatabase() {
       console.log('Database is empty. Seeding data...');
 
       // 2. Populate users and get their document IDs
-      const userDocs = new Map<string, string>(); // Map email to doc ID
-      const userNames = new Map<string, string>(); // Map email to name
-      for (const userData of initialUsers) {
+      const userDocs = new Map<string, { id: string; nome: string }>();
+      
+      // Wait for all user creation promises to resolve
+      await Promise.all(initialUsers.map(async (userData) => {
         const userRef = await addDoc(collection(db, 'users'), userData);
-        userDocs.set(userData.email, userRef.id);
-        userNames.set(userData.email, userData.nome);
+        userDocs.set(userData.email, { id: userRef.id, nome: userData.nome });
         console.log(`Added user: ${userData.nome}`);
-      }
+      }));
 
       // 3. Populate activities, linking them to the users created
-      const monitorCarlosId = userDocs.get('carlos.p@unimonitor.com');
-      const monitorCarlosName = userNames.get('carlos.p@unimonitor.com');
-      const monitorAnaId = userDocs.get('ana.s@unimonitor.com');
-      const monitorAnaName = userNames.get('ana.s@unimonitor.com');
+      const monitorCarlos = userDocs.get('carlos.p@unimonitor.com');
+      const monitorAna = userDocs.get('ana.s@unimonitor.com');
       
-      if (monitorCarlosId && monitorCarlosName) {
-          await addDoc(collection(db, 'activities'), { ...initialActivities[0], monitorId: monitorCarlosId, monitorName: monitorCarlosName });
-          await addDoc(collection(db, 'activities'), { ...initialActivities[2], monitorId: monitorCarlosId, monitorName: monitorCarlosName });
-          await addDoc(collection(db, 'activities'), { ...initialActivities[4], monitorId: monitorCarlosId, monitorName: monitorCarlosName });
+      if (monitorCarlos) {
+          await addDoc(collection(db, 'activities'), { ...initialActivities[0], monitorId: monitorCarlos.id, monitorName: monitorCarlos.nome });
+          await addDoc(collection(db, 'activities'), { ...initialActivities[2], monitorId: monitorCarlos.id, monitorName: monitorCarlos.nome });
+          await addDoc(collection(db, 'activities'), { ...initialActivities[4], monitorId: monitorCarlos.id, monitorName: monitorCarlos.nome });
           console.log('Added Carlos\'s activities.');
       }
-      if (monitorAnaId && monitorAnaName) {
-          await addDoc(collection(db, 'activities'), { ...initialActivities[1], monitorId: monitorAnaId, monitorName: monitorAnaName });
-          await addDoc(collection(db, 'activities'), { ...initialActivities[3], monitorId: monitorAnaId, monitorName: monitorAnaName });
+      if (monitorAna) {
+          await addDoc(collection(db, 'activities'), { ...initialActivities[1], monitorId: monitorAna.id, monitorName: monitorAna.nome });
+          await addDoc(collection(db, 'activities'), { ...initialActivities[3], monitorId: monitorAna.id, monitorName: monitorAna.nome });
           console.log('Added Ana\'s activities.');
       }
       
       // 4. Populate announcements
-      if (monitorCarlosId) {
-        await addDoc(collection(db, 'announcements'), { ...initialAnnouncements[1], monitorId: monitorCarlosId });
+      if (monitorCarlos) {
+        await addDoc(collection(db, 'announcements'), { ...initialAnnouncements[1], monitorId: monitorCarlos.id });
         console.log('Added Carlos\'s announcement.');
       }
-      if (monitorAnaId) {
-        await addDoc(collection(db, 'announcements'), { ...initialAnnouncements[0], monitorId: monitorAnaId });
+      if (monitorAna) {
+        await addDoc(collection(db, 'announcements'), { ...initialAnnouncements[0], monitorId: monitorAna.id });
         console.log('Added Ana\'s announcement.');
       }
 
