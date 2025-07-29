@@ -30,68 +30,52 @@ const initialAnnouncements: Omit<Announcement, 'id' | 'monitorId'>[] = [
 // --- SEEDING LOGIC ---
 
 export async function seedDatabase() {
-  console.log('[SEED] Iniciando verificação do banco de dados...');
   try {
-    // 1. Check if the 'users' collection is empty
     const usersQuery = query(collection(db, 'users'), limit(1));
     const usersSnapshot = await getDocs(usersQuery);
 
     if (usersSnapshot.empty) {
-      console.log('[SEED] Banco de dados vazio. Iniciando processo para popular...');
+      console.log('Database is empty. Seeding data...');
 
-      // 2. Populate users and get their document IDs
       const userDocs = new Map<string, { id: string; nome: string }>();
       
       const userPromises = initialUsers.map(async (userData) => {
         const userRef = await addDoc(collection(db, 'users'), userData);
         userDocs.set(userData.email, { id: userRef.id, nome: userData.nome });
-        console.log(`[SEED] Usuário adicionado: ${userData.nome} (ID: ${userRef.id})`);
       });
       
       await Promise.all(userPromises);
-      console.log('[SEED] Todos os usuários foram criados com sucesso.');
+      console.log('All users created.');
 
-
-      // 3. Populate activities, linking them to the users created
       const monitorCarlos = userDocs.get('carlos.p@unimonitor.com');
       const monitorAna = userDocs.get('ana.s@unimonitor.com');
       
       if (monitorCarlos) {
-          console.log(`[SEED] Adicionando atividades para o monitor: ${monitorCarlos.nome}`);
           await addDoc(collection(db, 'activities'), { ...initialActivities[0], monitorId: monitorCarlos.id, monitorName: monitorCarlos.nome });
           await addDoc(collection(db, 'activities'), { ...initialActivities[2], monitorId: monitorCarlos.id, monitorName: monitorCarlos.nome });
           await addDoc(collection(db, 'activities'), { ...initialActivities[4], monitorId: monitorCarlos.id, monitorName: monitorCarlos.nome });
-      } else {
-          console.log('[SEED] WARN: Monitor carlos.p@unimonitor.com não encontrado nos documentos criados.');
+          console.log("Added Carlos's activities.");
       }
       
       if (monitorAna) {
-          console.log(`[SEED] Adicionando atividades para a monitora: ${monitorAna.nome}`);
           await addDoc(collection(db, 'activities'), { ...initialActivities[1], monitorId: monitorAna.id, monitorName: monitorAna.nome });
           await addDoc(collection(db, 'activities'), { ...initialActivities[3], monitorId: monitorAna.id, monitorName: monitorAna.nome });
-      } else {
-          console.log('[SEED] WARN: Monitora ana.s@unimonitor.com não encontrada nos documentos criados.');
+          console.log("Added Ana's activities.");
       }
-      console.log('[SEED] Todas as atividades foram criadas com sucesso.');
-
       
-      // 4. Populate announcements
       if (monitorCarlos) {
-        console.log(`[SEED] Adicionando avisos para o monitor: ${monitorCarlos.nome}`);
         await addDoc(collection(db, 'announcements'), { ...initialAnnouncements[1], monitorId: monitorCarlos.id });
+        console.log("Added Carlos's announcement.");
       }
+
        if (monitorAna) {
-        console.log(`[SEED] Adicionando avisos para a monitora: ${monitorAna.nome}`);
         await addDoc(collection(db, 'announcements'), { ...initialAnnouncements[0], monitorId: monitorAna.id });
+        console.log("Added Ana's announcement.");
       }
-      console.log('[SEED] Todos os avisos foram criados com sucesso.');
-
-
-      console.log('[SEED] Processo de popular o banco de dados concluído com sucesso!');
-    } else {
-      console.log('[SEED] O banco de dados já contém dados. A rotina para popular não será executada.');
+      
+      console.log('Database seeding complete.');
     }
   } catch (error) {
-    console.error("[SEED] Ocorreu um erro crítico durante o processo:", error);
+    console.error("Critical error during seeding:", error);
   }
 }
