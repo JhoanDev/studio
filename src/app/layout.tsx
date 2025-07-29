@@ -5,7 +5,7 @@ import { Footer } from '@/components/Footer';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'UniSport Hub',
+  title: 'UniMonitor Esporte',
   description: 'Gestão e divulgação de atividades esportivas universitárias.',
 };
 

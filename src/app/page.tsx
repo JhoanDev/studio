@@ -29,7 +29,7 @@ export default async function Home({ searchParams }: { searchParams?: { modality
       <div className="container mx-auto px-4 py-8">
         <div className="text-center mb-12">
           <h1 className="font-headline text-4xl md:text-5xl font-bold text-primary mb-2">
-            UniSport Hub
+            UniMonitor Esporte
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Seu portal para as atividades esportivas da universidade. Encontre horários, locais e avisos importantes.
