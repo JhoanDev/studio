@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
-import { CheckCircle, XCircle, Trash2, Edit, PlusCircle, MoreVertical } from 'lucide-react';
+import { Check, X, Trash2, Edit, PlusCircle, MoreVertical } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   DropdownMenu,
@@ -51,41 +51,43 @@ export function AdminTabs({ activities: initialActivities, monitors: initialMoni
             <CardDescription>Aprove ou reprove as atividades submetidas pelos monitores.</CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Modalidade</TableHead>
-                  <TableHead>Monitor</TableHead>
-                  <TableHead>Dia e Hora</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {pendingActivities.length > 0 ? pendingActivities.map(activity => (
-                  <TableRow key={activity.id}>
-                    <TableCell className="font-medium">{activity.modalidade}</TableCell>
-                    <TableCell>{activity.monitorName}</TableCell>
-                    <TableCell>{activity.diaSemana}, {activity.horaInicio}-{activity.horaFim}</TableCell>
-                    <TableCell className="text-right">
-                        <div className="flex gap-2 justify-end">
-                            <Button size="sm" variant="outline" className="text-green-600 hover:bg-green-50 hover:text-green-700 border-green-600" onClick={() => handleActivityStatusChange(activity.id, 'APROVADO')}>
-                                <CheckCircle className="mr-2 h-4 w-4" /> Aprovar
-                            </Button>
-                            <Button size="sm" variant="outline" className="text-red-600 hover:bg-red-50 hover:text-red-700 border-red-600" onClick={() => handleActivityStatusChange(activity.id, 'REPROVADO')}>
-                                <XCircle className="mr-2 h-4 w-4" /> Reprovar
-                            </Button>
-                        </div>
-                    </TableCell>
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Modalidade</TableHead>
+                    <TableHead>Monitor</TableHead>
+                    <TableHead>Dia e Hora</TableHead>
+                    <TableHead className="text-right w-[210px]">Ações</TableHead>
                   </TableRow>
-                )) : (
-                    <TableRow>
-                        <TableCell colSpan={4} className="text-center text-muted-foreground h-24">
-                            Nenhuma atividade pendente.
-                        </TableCell>
+                </TableHeader>
+                <TableBody>
+                  {pendingActivities.length > 0 ? pendingActivities.map(activity => (
+                    <TableRow key={activity.id}>
+                      <TableCell className="font-medium">{activity.modalidade}</TableCell>
+                      <TableCell>{activity.monitorName}</TableCell>
+                      <TableCell>{activity.diaSemana}, {activity.horaInicio}-{activity.horaFim}</TableCell>
+                      <TableCell className="text-right">
+                          <div className="flex gap-2 justify-end">
+                              <Button size="sm" variant="outline" className="text-green-600 hover:bg-green-50 hover:text-green-700 border-green-200 hover:border-green-300" onClick={() => handleActivityStatusChange(activity.id, 'APROVADO')}>
+                                  <Check className="mr-2 h-4 w-4" /> Aprovar
+                              </Button>
+                              <Button size="sm" variant="outline" className="text-red-600 hover:bg-red-50 hover:text-red-700 border-red-200 hover:border-red-300" onClick={() => handleActivityStatusChange(activity.id, 'REPROVADO')}>
+                                  <X className="mr-2 h-4 w-4" /> Reprovar
+                              </Button>
+                          </div>
+                      </TableCell>
                     </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                  )) : (
+                      <TableRow>
+                          <TableCell colSpan={4} className="text-center text-muted-foreground h-24">
+                              Nenhuma atividade pendente.
+                          </TableCell>
+                      </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
       </TabsContent>
