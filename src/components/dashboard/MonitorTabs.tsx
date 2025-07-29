@@ -27,7 +27,6 @@ import {
 } from "@/components/ui/alert-dialog"
 import { ActivityForm } from './ActivityForm';
 import { useToast } from '@/hooks/use-toast';
-import { getModalities } from '@/lib/data'; // Assuming we can fetch modalities
 
 interface MonitorTabsProps {
   activities: Activity[];
@@ -148,10 +147,10 @@ export function MonitorTabs({ activities: initialActivities, announcements: init
                               </DropdownMenuItem>
                                <AlertDialog>
                                     <AlertDialogTrigger asChild>
-                                        <Button variant="ghost" className="w-full justify-start p-2 font-normal text-red-600 hover:bg-red-50 hover:text-red-600 rounded-sm text-sm h-auto relative flex cursor-default select-none items-center gap-2">
+                                        <div className="relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 text-red-600 hover:bg-red-50">
                                             <Trash2 className="mr-2 h-4 w-4" />
-                                            Remover
-                                        </Button>
+                                            <span>Remover</span>
+                                        </div>
                                     </AlertDialogTrigger>
                                     <AlertDialogContent>
                                         <AlertDialogHeader>
