@@ -3,8 +3,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import type { Activity, Announcement } from '@/lib/types';
-import { addActivity, updateActivity, deleteActivity, addAnnouncement, updateAnnouncement, deleteAnnouncement } from '@/lib/data';
+import type { Activity, Announcement, User } from '@/lib/types';
+import { addActivity, updateActivity, deleteActivity, addAnnouncement, updateAnnouncement, deleteAnnouncement, findUserByEmail } from '@/lib/data';
 import { auth } from '@/lib/firebase';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -93,13 +93,19 @@ export function MonitorTabs({ activities: initialActivities, announcements: init
   };
 
   const handleActivityFormSubmit = async (values: ActivityFormValues) => {
-    const currentUser = auth.currentUser;
-    if (!currentUser) {
+    const firebaseUser = auth.currentUser;
+    if (!firebaseUser) {
         toast({ variant: 'destructive', title: 'Erro', description: 'Você precisa estar logado.'});
         return;
     }
     
     try {
+        const appUser = await findUserByEmail(firebaseUser.email);
+        if (!appUser) {
+            toast({ variant: 'destructive', title: 'Erro', description: 'Usuário não encontrado no banco de dados.'});
+            return;
+        }
+
         if (selectedActivity) {
             const updatedData = { ...values, status: 'PENDENTE' as const };
             await updateActivity(selectedActivity.id, updatedData);
@@ -111,8 +117,8 @@ export function MonitorTabs({ activities: initialActivities, announcements: init
             const newActivity: Omit<Activity, 'id'> = {
                 ...values,
                 status: 'PENDENTE',
-                monitorId: currentUser.uid, 
-                monitorName: currentUser.displayName || 'Monitor sem nome' 
+                monitorId: appUser.id, 
+                monitorName: appUser.nome,
             };
             await addActivity(newActivity);
             toast({
@@ -144,13 +150,19 @@ export function MonitorTabs({ activities: initialActivities, announcements: init
     };
 
     const handleAnnouncementFormSubmit = async (values: AnnouncementFormValues) => {
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
+        const firebaseUser = auth.currentUser;
+        if (!firebaseUser) {
             toast({ variant: 'destructive', title: 'Erro', description: 'Você precisa estar logado.'});
             return;
         }
 
         try {
+            const appUser = await findUserByEmail(firebaseUser.email);
+            if (!appUser) {
+                toast({ variant: 'destructive', title: 'Erro', description: 'Usuário não encontrado no banco de dados.'});
+                return;
+            }
+
             if (selectedAnnouncement) {
                 await updateAnnouncement(selectedAnnouncement.id, values);
                 toast({ title: 'Aviso atualizado com sucesso!' });
@@ -158,7 +170,7 @@ export function MonitorTabs({ activities: initialActivities, announcements: init
                 const newAnnouncement: Omit<Announcement, 'id'> = {
                     ...values,
                     dataPublicacao: new Date().toISOString(),
-                    monitorId: currentUser.uid,
+                    monitorId: appUser.id,
                 };
                 await addAnnouncement(newAnnouncement);
                 toast({ title: 'Aviso publicado com sucesso!' });
@@ -344,7 +356,7 @@ export function MonitorTabs({ activities: initialActivities, announcements: init
                                         <AlertDialogFooter>
                                         <AlertDialogCancel>Cancelar</AlertDialogCancel>
                                         <AlertDialogAction onClick={() => handleDeleteAnnouncement(announcement.id)} className="bg-destructive hover:bg-destructive/90">Sim, remover</AlertDialogAction>
-                                        </AlertDialogFooter>
+                                        </Footer>
                                     </AlertDialogContent>
                                 </AlertDialog>
                             </TableCell>
