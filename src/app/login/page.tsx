@@ -4,8 +4,8 @@ import { Logo } from '@/components/icons';
 import { seedDatabase } from '@/lib/seed';
 
 export default async function LoginPage() {
-  // Para fins de teste, esta função irá popular o banco se ele estiver vazio.
-  // Em produção, isso seria removido.
+  // Para fins de teste, esta função irá popular o banco com atividades e avisos se estiver vazio.
+  // Em um app real, isso seria removido.
   await seedDatabase();
 
   return (

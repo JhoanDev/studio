@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -48,9 +49,10 @@ interface AnnouncementFormProps {
   onSubmit: (values: AnnouncementFormValues) => void;
   announcement: Announcement | null;
   modalities: string[];
+  isSubmitting: boolean;
 }
 
-export function AnnouncementForm({ isOpen, onOpenChange, onSubmit, announcement, modalities }: AnnouncementFormProps) {
+export function AnnouncementForm({ isOpen, onOpenChange, onSubmit, announcement, modalities, isSubmitting }: AnnouncementFormProps) {
   const form = useForm<AnnouncementFormValues>({
     resolver: zodResolver(announcementFormSchema),
     defaultValues: {
@@ -61,18 +63,20 @@ export function AnnouncementForm({ isOpen, onOpenChange, onSubmit, announcement,
   });
 
   useEffect(() => {
-    if (announcement) {
-      form.reset({
-        titulo: announcement.titulo,
-        mensagem: announcement.mensagem,
-        modalidade: announcement.modalidade
-      });
-    } else {
-      form.reset({
-        titulo: '',
-        mensagem: '',
-        modalidade: '',
-      });
+    if (isOpen) {
+      if (announcement) {
+        form.reset({
+          titulo: announcement.titulo,
+          mensagem: announcement.mensagem,
+          modalidade: announcement.modalidade
+        });
+      } else {
+        form.reset({
+          titulo: '',
+          mensagem: '',
+          modalidade: '',
+        });
+      }
     }
   }, [announcement, form, isOpen]);
 
@@ -82,6 +86,10 @@ export function AnnouncementForm({ isOpen, onOpenChange, onSubmit, announcement,
     : 'Preencha os dados para criar um novo aviso para os alunos.';
   const buttonText = announcement ? 'Salvar Alterações' : 'Publicar Aviso';
 
+  const handleFormSubmit = (values: AnnouncementFormValues) => {
+    onSubmit(values);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[480px]">
@@ -90,7 +98,7 @@ export function AnnouncementForm({ isOpen, onOpenChange, onSubmit, announcement,
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="titulo"
@@ -127,7 +135,7 @@ export function AnnouncementForm({ isOpen, onOpenChange, onSubmit, announcement,
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Modalidade Associada</FormLabel>
-                   <Select onValueChange={field.onChange} defaultValue={field.value}>
+                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione a modalidade" />
@@ -145,8 +153,8 @@ export function AnnouncementForm({ isOpen, onOpenChange, onSubmit, announcement,
             />
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancelar</Button>
-              <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {buttonText}
               </Button>
             </DialogFooter>

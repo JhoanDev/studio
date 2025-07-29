@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -62,6 +63,7 @@ interface ActivityFormProps {
   onSubmit: (values: ActivityFormValues) => void;
   activity: Activity | null;
   modalities: string[];
+  isSubmitting: boolean;
 }
 
 const weekDays = [
@@ -74,7 +76,7 @@ const weekDays = [
     "Domingo"
 ]
 
-export function ActivityForm({ isOpen, onOpenChange, onSubmit, activity, modalities }: ActivityFormProps) {
+export function ActivityForm({ isOpen, onOpenChange, onSubmit, activity, modalities, isSubmitting }: ActivityFormProps) {
   const form = useForm<ActivityFormValues>({
     resolver: zodResolver(activityFormSchema),
     defaultValues: {
@@ -86,20 +88,22 @@ export function ActivityForm({ isOpen, onOpenChange, onSubmit, activity, modalit
   });
 
   useEffect(() => {
-    if (activity) {
-      form.reset({
-        modalidade: activity.modalidade,
-        diaSemana: activity.diaSemana,
-        horaInicio: activity.horaInicio,
-        horaFim: activity.horaFim
-      });
-    } else {
-      form.reset({
-        modalidade: '',
-        diaSemana: '',
-        horaInicio: '',
-        horaFim: '',
-      });
+    if (isOpen) { // Apenas atualize o form quando o modal for aberto
+        if (activity) {
+        form.reset({
+            modalidade: activity.modalidade,
+            diaSemana: activity.diaSemana,
+            horaInicio: activity.horaInicio,
+            horaFim: activity.horaFim
+        });
+        } else {
+        form.reset({
+            modalidade: '',
+            diaSemana: '',
+            horaInicio: '',
+            horaFim: '',
+        });
+        }
     }
   }, [activity, form, isOpen]);
 
@@ -109,6 +113,10 @@ export function ActivityForm({ isOpen, onOpenChange, onSubmit, activity, modalit
     : 'Preencha os dados para criar uma nova atividade esportiva.';
   const buttonText = activity ? 'Salvar Alterações' : 'Cadastrar Atividade';
 
+  const handleFormSubmit = (values: ActivityFormValues) => {
+    onSubmit(values);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[480px]">
@@ -117,14 +125,14 @@ export function ActivityForm({ isOpen, onOpenChange, onSubmit, activity, modalit
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="modalidade"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Modalidade</FormLabel>
-                   <Select onValueChange={field.onChange} defaultValue={field.value}>
+                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione a modalidade" />
@@ -146,11 +154,11 @@ export function ActivityForm({ isOpen, onOpenChange, onSubmit, activity, modalit
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Dia da Semana</FormLabel>
-                   <Select onValueChange={field.onChange} defaultValue={field.value}>
+                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione o dia da semana" />
-                      </Trigger>
+                      </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {weekDays.map(day => (
@@ -192,8 +200,8 @@ export function ActivityForm({ isOpen, onOpenChange, onSubmit, activity, modalit
             </div>
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancelar</Button>
-              <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {buttonText}
               </Button>
             </DialogFooter>
