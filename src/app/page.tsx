@@ -41,7 +41,7 @@ export default async function Home({ searchParams }: { searchParams?: { modality
         <div className="mt-8">
           <h2 className="font-headline text-3xl font-semibold mb-6 text-primary/90">Cronograma de Atividades</h2>
           {approvedActivities.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {approvedActivities.map((activity) => (
                 <ActivityCard key={activity.id} activity={activity} />
               ))}

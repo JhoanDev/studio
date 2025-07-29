@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
-import { Check, X, Trash2, Edit, PlusCircle, MoreVertical } from 'lucide-react';
+import { Check, X, Trash2, Edit, PlusCircle, MoreVertical, Users, ListChecks } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   DropdownMenu,
@@ -39,9 +39,9 @@ export function AdminTabs({ activities: initialActivities, monitors: initialMoni
 
   return (
     <Tabs defaultValue="activities">
-      <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="activities">Aprovar Atividades</TabsTrigger>
-        <TabsTrigger value="monitors">Gerenciar Monitores</TabsTrigger>
+      <TabsList className="grid w-full grid-cols-1 md:grid-cols-2">
+        <TabsTrigger value="activities"><ListChecks className="mr-2"/> Aprovar Atividades</TabsTrigger>
+        <TabsTrigger value="monitors"><Users className="mr-2"/> Gerenciar Monitores</TabsTrigger>
       </TabsList>
 
       <TabsContent value="activities">
@@ -55,25 +55,33 @@ export function AdminTabs({ activities: initialActivities, monitors: initialMoni
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Modalidade</TableHead>
-                    <TableHead>Monitor</TableHead>
-                    <TableHead>Dia e Hora</TableHead>
-                    <TableHead className="text-right w-[210px]">Ações</TableHead>
+                    <TableHead>Atividade</TableHead>
+                    <TableHead className="hidden md:table-cell">Monitor</TableHead>
+                    <TableHead className="hidden lg:table-cell">Dia e Hora</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {pendingActivities.length > 0 ? pendingActivities.map(activity => (
                     <TableRow key={activity.id}>
-                      <TableCell className="font-medium">{activity.modalidade}</TableCell>
-                      <TableCell>{activity.monitorName}</TableCell>
-                      <TableCell>{activity.diaSemana}, {activity.horaInicio}-{activity.horaFim}</TableCell>
+                      <TableCell>
+                        <div className="font-medium">{activity.modalidade}</div>
+                        <div className="text-sm text-muted-foreground md:hidden">
+                          {activity.monitorName}
+                        </div>
+                        <div className="text-sm text-muted-foreground lg:hidden">
+                          {activity.diaSemana}, {activity.horaInicio}-{activity.horaFim}
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">{activity.monitorName}</TableCell>
+                      <TableCell className="hidden lg:table-cell">{activity.diaSemana}, {activity.horaInicio}-{activity.horaFim}</TableCell>
                       <TableCell className="text-right">
                           <div className="flex gap-2 justify-end">
                               <Button size="sm" variant="outline" className="text-green-600 hover:bg-green-50 hover:text-green-700 border-green-200 hover:border-green-300" onClick={() => handleActivityStatusChange(activity.id, 'APROVADO')}>
-                                  <Check className="mr-2 h-4 w-4" /> Aprovar
+                                  <Check className="h-4 w-4 md:mr-2" /> <span className="hidden md:inline">Aprovar</span>
                               </Button>
                               <Button size="sm" variant="outline" className="text-red-600 hover:bg-red-50 hover:text-red-700 border-red-200 hover:border-red-300" onClick={() => handleActivityStatusChange(activity.id, 'REPROVADO')}>
-                                  <X className="mr-2 h-4 w-4" /> Reprovar
+                                  <X className="h-4 w-4 md:mr-2" /> <span className="hidden md:inline">Reprovar</span>
                               </Button>
                           </div>
                       </TableCell>
@@ -94,12 +102,12 @@ export function AdminTabs({ activities: initialActivities, monitors: initialMoni
 
       <TabsContent value="monitors">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
               <CardTitle>Monitores</CardTitle>
               <CardDescription>Adicione, edite ou remova monitores do sistema.</CardDescription>
             </div>
-            <Button>
+            <Button className="w-full md:w-auto">
                 <PlusCircle className="mr-2 h-4 w-4"/>
                 Adicionar Monitor
             </Button>
@@ -110,17 +118,20 @@ export function AdminTabs({ activities: initialActivities, monitors: initialMoni
                     <TableHeader>
                         <TableRow>
                         <TableHead>Nome</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Login</TableHead>
+                        <TableHead className="hidden md:table-cell">Email</TableHead>
+                        <TableHead className="hidden lg:table-cell">Login</TableHead>
                         <TableHead className="text-right">Ações</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {monitors.map(monitor => (
                         <TableRow key={monitor.id}>
-                            <TableCell className="font-medium">{monitor.nome}</TableCell>
-                            <TableCell>{monitor.email}</TableCell>
-                            <TableCell><Badge variant="secondary">{monitor.login}</Badge></TableCell>
+                            <TableCell>
+                                <div className="font-medium">{monitor.nome}</div>
+                                <div className="text-sm text-muted-foreground md:hidden">{monitor.email}</div>
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell">{monitor.email}</TableCell>
+                            <TableCell className="hidden lg:table-cell"><Badge variant="secondary">{monitor.login}</Badge></TableCell>
                             <TableCell className="text-right">
                               <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
