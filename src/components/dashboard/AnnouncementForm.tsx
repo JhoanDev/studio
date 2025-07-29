@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -39,7 +40,7 @@ const announcementFormSchema = z.object({
   modalidade: z.string().min(1, 'Selecione uma modalidade.'),
 });
 
-type AnnouncementFormValues = z.infer<typeof announcementFormSchema>;
+export type AnnouncementFormValues = z.infer<typeof announcementFormSchema>;
 
 interface AnnouncementFormProps {
   isOpen: boolean;
@@ -61,7 +62,11 @@ export function AnnouncementForm({ isOpen, onOpenChange, onSubmit, announcement,
 
   useEffect(() => {
     if (announcement) {
-      form.reset(announcement);
+      form.reset({
+        titulo: announcement.titulo,
+        mensagem: announcement.mensagem,
+        modalidade: announcement.modalidade
+      });
     } else {
       form.reset({
         titulo: '',

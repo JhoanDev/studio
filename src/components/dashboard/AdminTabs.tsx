@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -7,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
-import { Check, X, Trash2, Edit, PlusCircle, MoreVertical, Users, ListChecks } from 'lucide-react';
+import { Check, X, Trash2, Edit, PlusCircle, MoreVertical, Users, ListChecks, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   DropdownMenu,
@@ -15,6 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { updateActivityStatus } from '@/lib/data';
 
 
 interface AdminTabsProps {
@@ -25,14 +27,27 @@ interface AdminTabsProps {
 export function AdminTabs({ activities: initialActivities, monitors: initialMonitors }: AdminTabsProps) {
   const [activities, setActivities] = useState<Activity[]>(initialActivities);
   const [monitors, setMonitors] = useState<User[]>(initialMonitors);
+  const [isLoading, setIsLoading] = useState<{[key: string]: boolean}>({});
   const { toast } = useToast();
 
-  const handleActivityStatusChange = (activityId: string, status: Status) => {
-    setActivities(prev => prev.map(act => act.id === activityId ? { ...act, status } : act));
-    toast({
-        title: `Atividade ${status === 'APROVADO' ? 'aprovada' : 'reprovada'}!`,
-        description: `A atividade foi marcada como ${status.toLowerCase()}.`,
-    });
+  const handleActivityStatusChange = async (activityId: string, status: Status) => {
+    setIsLoading(prev => ({ ...prev, [activityId]: true }));
+    try {
+        await updateActivityStatus(activityId, status);
+        setActivities(prev => prev.map(act => act.id === activityId ? { ...act, status } : act).filter(act => act.id !== activityId));
+        toast({
+            title: `Atividade ${status === 'APROVADO' ? 'aprovada' : 'reprovada'}!`,
+            description: `A atividade foi marcada como ${status.toLowerCase()}.`,
+        });
+    } catch (error) {
+        toast({
+            variant: 'destructive',
+            title: 'Erro!',
+            description: 'Não foi possível atualizar o status da atividade.',
+        });
+    } finally {
+        setIsLoading(prev => ({ ...prev, [activityId]: false }));
+    }
   };
 
   const pendingActivities = activities.filter(a => a.status === 'PENDENTE');
@@ -77,11 +92,25 @@ export function AdminTabs({ activities: initialActivities, monitors: initialMoni
                       <TableCell className="hidden lg:table-cell">{activity.diaSemana}, {activity.horaInicio}-{activity.horaFim}</TableCell>
                       <TableCell className="text-right">
                           <div className="flex gap-2 justify-end">
-                              <Button size="sm" variant="outline" className="text-green-600 hover:bg-green-50 hover:text-green-700 border-green-200 hover:border-green-300" onClick={() => handleActivityStatusChange(activity.id, 'APROVADO')}>
-                                  <Check className="h-4 w-4 md:mr-2" /> <span className="hidden md:inline">Aprovar</span>
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="text-green-600 hover:bg-green-50 hover:text-green-700 border-green-200 hover:border-green-300" 
+                                onClick={() => handleActivityStatusChange(activity.id, 'APROVADO')}
+                                disabled={isLoading[activity.id]}
+                              >
+                                  {isLoading[activity.id] ? <Loader2 className="h-4 w-4 animate-spin"/> : <Check className="h-4 w-4 md:mr-2" />} 
+                                  <span className="hidden md:inline">Aprovar</span>
                               </Button>
-                              <Button size="sm" variant="outline" className="text-red-600 hover:bg-red-50 hover:text-red-700 border-red-200 hover:border-red-300" onClick={() => handleActivityStatusChange(activity.id, 'REPROVADO')}>
-                                  <X className="h-4 w-4 md:mr-2" /> <span className="hidden md:inline">Reprovar</span>
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="text-red-600 hover:bg-red-50 hover:text-red-700 border-red-200 hover:border-red-300" 
+                                onClick={() => handleActivityStatusChange(activity.id, 'REPROVADO')}
+                                disabled={isLoading[activity.id]}
+                              >
+                                  {isLoading[activity.id] ? <Loader2 className="h-4 w-4 animate-spin"/> : <X className="h-4 w-4 md:mr-2" />}
+                                  <span className="hidden md:inline">Reprovar</span>
                               </Button>
                           </div>
                       </TableCell>

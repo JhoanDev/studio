@@ -54,7 +54,7 @@ const activityFormSchema = z.object({
 });
 
 
-type ActivityFormValues = z.infer<typeof activityFormSchema>;
+export type ActivityFormValues = z.infer<typeof activityFormSchema>;
 
 interface ActivityFormProps {
   isOpen: boolean;
@@ -87,7 +87,12 @@ export function ActivityForm({ isOpen, onOpenChange, onSubmit, activity, modalit
 
   useEffect(() => {
     if (activity) {
-      form.reset(activity);
+      form.reset({
+        modalidade: activity.modalidade,
+        diaSemana: activity.diaSemana,
+        horaInicio: activity.horaInicio,
+        horaFim: activity.horaFim
+      });
     } else {
       form.reset({
         modalidade: '',
@@ -145,7 +150,7 @@ export function ActivityForm({ isOpen, onOpenChange, onSubmit, activity, modalit
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione o dia da semana" />
-                      </SelectTrigger>
+                      </Trigger>
                     </FormControl>
                     <SelectContent>
                       {weekDays.map(day => (

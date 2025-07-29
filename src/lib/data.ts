@@ -1,6 +1,7 @@
-import { collection, getDocs, query, where } from 'firebase/firestore';
+
+import { collection, getDocs, query, where, addDoc, updateDoc, doc, deleteDoc } from 'firebase/firestore';
 import { db } from './firebase';
-import type { User, Activity, Announcement } from './types';
+import type { User, Activity, Announcement, Status } from './types';
 
 // As modalidades foram movidas para cá para evitar o erro "use server".
 export const initialModalities = [
@@ -44,3 +45,42 @@ export const findUserByEmail = async (email: string | null | undefined): Promise
     const userDoc = querySnapshot.docs[0];
     return { id: userDoc.id, ...userDoc.data() } as User;
 }
+
+
+// --- Funções de Escrita ---
+
+// Atividades
+export const addActivity = async (activityData: Omit<Activity, 'id'>) => {
+  await addDoc(collection(db, 'activities'), activityData);
+};
+
+export const updateActivity = async (activityId: string, activityData: Partial<Activity>) => {
+  const activityRef = doc(db, 'activities', activityId);
+  await updateDoc(activityRef, activityData);
+};
+
+export const updateActivityStatus = async (activityId: string, status: Status) => {
+    const activityRef = doc(db, 'activities', activityId);
+    await updateDoc(activityRef, { status });
+};
+
+export const deleteActivity = async (activityId: string) => {
+  const activityRef = doc(db, 'activities', activityId);
+  await deleteDoc(activityRef);
+};
+
+
+// Avisos
+export const addAnnouncement = async (announcementData: Omit<Announcement, 'id'>) => {
+  await addDoc(collection(db, 'announcements'), announcementData);
+};
+
+export const updateAnnouncement = async (announcementId: string, announcementData: Partial<Announcement>) => {
+    const announcementRef = doc(db, 'announcements', announcementId);
+    await updateDoc(announcementRef, announcementData);
+};
+
+export const deleteAnnouncement = async (announcementId: string) => {
+    const announcementRef = doc(db, 'announcements', announcementId);
+    await deleteDoc(announcementRef);
+};

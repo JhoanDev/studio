@@ -1,7 +1,11 @@
+
 'use client'
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import type { Activity, Announcement } from '@/lib/types';
+import { addActivity, updateActivity, deleteActivity, addAnnouncement, updateAnnouncement, deleteAnnouncement } from '@/lib/data';
+import { auth } from '@/lib/firebase';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -27,7 +31,9 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { ActivityForm } from './ActivityForm';
+import type { ActivityFormValues } from './ActivityForm';
 import { AnnouncementForm } from './AnnouncementForm';
+import type { AnnouncementFormValues } from './AnnouncementForm';
 import { useToast } from '@/hooks/use-toast';
 
 interface MonitorTabsProps {
@@ -43,6 +49,7 @@ const statusVariantMap: { [key: string]: 'default' | 'secondary' | 'destructive'
 };
 
 export function MonitorTabs({ activities: initialActivities, announcements: initialAnnouncements, modalities }: MonitorTabsProps) {
+  const router = useRouter();
   const [activities, setActivities] = useState<Activity[]>(initialActivities);
   const [announcements, setAnnouncements] = useState<Announcement[]>(initialAnnouncements);
   
@@ -54,6 +61,10 @@ export function MonitorTabs({ activities: initialActivities, announcements: init
 
   const { toast } = useToast();
 
+  const refreshData = () => {
+    router.refresh();
+  }
+
   const handleEditActivity = (activity: Activity) => {
     setSelectedActivity(activity);
     setIsActivityFormOpen(true);
@@ -64,41 +75,61 @@ export function MonitorTabs({ activities: initialActivities, announcements: init
     setIsActivityFormOpen(true);
   };
 
-  const handleDeleteActivity = (activityId: string) => {
-    // In a real app, you'd call an API here.
-    setActivities(prev => prev.filter(act => act.id !== activityId));
-    toast({
-      title: "Atividade Removida!",
-      description: "A atividade foi removida com sucesso.",
-    });
+  const handleDeleteActivity = async (activityId: string) => {
+    try {
+        await deleteActivity(activityId);
+        toast({
+          title: "Atividade Removida!",
+          description: "A atividade foi removida com sucesso.",
+        });
+        refreshData();
+    } catch(e) {
+        toast({
+            variant: "destructive",
+            title: "Erro ao remover atividade",
+            description: "Não foi possível remover a atividade. Tente novamente.",
+        });
+    }
   };
 
-  const handleActivityFormSubmit = (values: Omit<Activity, 'id' | 'status' | 'monitorId' | 'monitorName'>) => {
-    // In a real app, you'd call an API here.
-    if (selectedActivity) {
-      // Update existing activity
-      setActivities(prev => prev.map(act => act.id === selectedActivity.id ? { ...selectedActivity, ...values, status: 'PENDENTE' } : act));
-      toast({
-        title: "Atividade Atualizada!",
-        description: "Sua atividade foi atualizada e enviada para aprovação.",
-      });
-    } else {
-      // Create new activity
-      const newActivity: Activity = {
-        id: `act${Date.now()}`, // temporary unique ID
-        ...values,
-        status: 'PENDENTE',
-        monitorId: 'monitor1', // This would be the logged-in user's ID
-        monitorName: 'Carlos Pereira' // This would be the logged-in user's name
-      };
-      setActivities(prev => [...prev, newActivity]);
-       toast({
-        title: "Atividade Cadastrada!",
-        description: "Sua atividade foi criada e enviada para aprovação.",
-      });
+  const handleActivityFormSubmit = async (values: ActivityFormValues) => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+        toast({ variant: 'destructive', title: 'Erro', description: 'Você precisa estar logado.'});
+        return;
     }
-    setIsActivityFormOpen(false);
-    setSelectedActivity(null);
+    
+    try {
+        if (selectedActivity) {
+            const updatedData = { ...values, status: 'PENDENTE' as const };
+            await updateActivity(selectedActivity.id, updatedData);
+            toast({
+                title: "Atividade Atualizada!",
+                description: "Sua atividade foi atualizada e reenviada para aprovação.",
+            });
+        } else {
+            const newActivity: Omit<Activity, 'id'> = {
+                ...values,
+                status: 'PENDENTE',
+                monitorId: currentUser.uid, 
+                monitorName: currentUser.displayName || 'Monitor sem nome' 
+            };
+            await addActivity(newActivity);
+            toast({
+                title: "Atividade Cadastrada!",
+                description: "Sua atividade foi criada e enviada para aprovação.",
+            });
+        }
+        setIsActivityFormOpen(false);
+        setSelectedActivity(null);
+        refreshData();
+    } catch (error) {
+         toast({
+            variant: "destructive",
+            title: "Erro ao salvar",
+            description: "Não foi possível salvar a atividade. Tente novamente.",
+        });
+    }
   }
 
   // Handlers for Announcements
@@ -112,31 +143,49 @@ export function MonitorTabs({ activities: initialActivities, announcements: init
         setIsAnnouncementFormOpen(true);
     };
 
-    const handleAnnouncementFormSubmit = (values: Omit<Announcement, 'id' | 'monitorId' | 'dataPublicacao'>) => {
-        // Mock logic
-        if (selectedAnnouncement) {
-            const updatedAnnouncement = {
-                ...selectedAnnouncement,
-                ...values,
-            };
-            setAnnouncements(prev => prev.map(ann => ann.id === selectedAnnouncement.id ? updatedAnnouncement : ann));
-            toast({ title: 'Aviso atualizado com sucesso!' });
-        } else {
-            const newAnnouncement: Announcement = {
-                id: `ann${Date.now()}`,
-                ...values,
-                dataPublicacao: new Date().toISOString(),
-                monitorId: 'monitor1', // placeholder
-            };
-            setAnnouncements(prev => [newAnnouncement, ...prev]);
-            toast({ title: 'Aviso publicado com sucesso!' });
+    const handleAnnouncementFormSubmit = async (values: AnnouncementFormValues) => {
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            toast({ variant: 'destructive', title: 'Erro', description: 'Você precisa estar logado.'});
+            return;
         }
-        setIsAnnouncementFormOpen(false);
+
+        try {
+            if (selectedAnnouncement) {
+                await updateAnnouncement(selectedAnnouncement.id, values);
+                toast({ title: 'Aviso atualizado com sucesso!' });
+            } else {
+                const newAnnouncement: Omit<Announcement, 'id'> = {
+                    ...values,
+                    dataPublicacao: new Date().toISOString(),
+                    monitorId: currentUser.uid,
+                };
+                await addAnnouncement(newAnnouncement);
+                toast({ title: 'Aviso publicado com sucesso!' });
+            }
+            setIsAnnouncementFormOpen(false);
+            refreshData();
+        } catch (error) {
+             toast({
+                variant: "destructive",
+                title: "Erro ao publicar",
+                description: "Não foi possível publicar o aviso. Tente novamente.",
+            });
+        }
     };
 
-    const handleDeleteAnnouncement = (id: string) => {
-        setAnnouncements(prev => prev.filter(ann => ann.id !== id));
-        toast({ title: 'Aviso removido!' });
+    const handleDeleteAnnouncement = async (id: string) => {
+        try {
+            await deleteAnnouncement(id);
+            toast({ title: 'Aviso removido!' });
+            refreshData();
+        } catch (error) {
+             toast({
+                variant: "destructive",
+                title: "Erro ao remover",
+                description: "Não foi possível remover o aviso. Tente novamente.",
+            });
+        }
     };
 
 
