@@ -1,8 +1,13 @@
 import { LoginForm } from '@/components/LoginForm';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Logo } from '@/components/icons';
+import { seedDatabase } from '@/lib/seed';
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  // Para fins de teste, esta função irá popular o banco se ele estiver vazio.
+  // Em produção, isso seria removido.
+  await seedDatabase();
+
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-8rem)] bg-background p-4">
       <Card className="w-full max-w-sm shadow-2xl hover:shadow-2xl transition-shadow">

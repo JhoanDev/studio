@@ -2,7 +2,8 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from './firebase';
 import type { User, Activity, Announcement } from './types';
 
-const modalities = [
+// As modalidades foram movidas para cá para evitar o erro "use server".
+export const initialModalities = [
     'Futebol', 'Vôlei', 'Basquete', 'Natação', 'Handebol', 'Atletismo', 'Tênis de Mesa', 'Xadrez', 'Yoga'
 ];
 
@@ -29,11 +30,11 @@ export const getAnnouncements = async (): Promise<Announcement[]> => {
 };
 
 export const getModalities = async (): Promise<string[]> => {
-    return new Promise(resolve => setTimeout(() => resolve(modalities), 50));
+    return new Promise(resolve => setTimeout(() => resolve(initialModalities), 50));
 };
 
 // Esta função agora busca o usuário pelo e-mail, que é o identificador no Firebase Auth.
-export const findUserByEmail = async (email: string): Promise<User | undefined> => {
+export const findUserByEmail = async (email: string | null | undefined): Promise<User | undefined> => {
     if (!email) return undefined;
     const q = query(collection(db, "users"), where("email", "==", email));
     const querySnapshot = await getDocs(q);
