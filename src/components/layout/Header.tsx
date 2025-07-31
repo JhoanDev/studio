@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Logo } from '@/components/icons';
+import { Logo } from '@/components/shared/icons';
 import { LogIn } from 'lucide-react';
 
 export function Header() {

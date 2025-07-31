@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { Activity, User, Status } from '@/lib/types';
+import type { Activity, User, Status } from '@/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -16,7 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { updateActivityStatus } from '@/lib/data';
+import { updateActivityStatus } from '@/lib/actions/data';
 
 
 interface AdminTabsProps {

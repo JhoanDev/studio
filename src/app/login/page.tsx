@@ -1,7 +1,7 @@
-import { LoginForm } from '@/components/LoginForm';
+import { LoginForm } from '@/components/forms/LoginForm';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Logo } from '@/components/icons';
-import { seedDatabase } from '@/lib/seed';
+import { Logo } from '@/components/shared/icons';
+import { seedDatabase } from '@/lib/actions/seed';
 
 export default async function LoginPage() {
   // Para fins de teste, esta função irá popular o banco com atividades e avisos se estiver vazio.

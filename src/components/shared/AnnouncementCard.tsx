@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import type { Announcement } from '@/lib/types';
+import type { Announcement } from '@/types';
 import { Megaphone, Calendar } from 'lucide-react';
 
 interface AnnouncementCardProps {

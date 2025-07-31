@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import type { Activity } from '@/lib/types';
+import type { Activity } from '@/types';
 import { Calendar, Clock, User } from 'lucide-react';
 
 interface ActivityCardProps {

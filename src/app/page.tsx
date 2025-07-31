@@ -1,8 +1,8 @@
-import { ActivityCard } from '@/components/ActivityCard';
-import { AnnouncementCard } from '@/components/AnnouncementCard';
-import { FilterControls } from '@/components/FilterControls';
-import { getActivities, getAnnouncements, getModalities } from '@/lib/data';
-import type { Activity, Announcement } from '@/lib/types';
+import { ActivityCard } from '@/components/shared/ActivityCard';
+import { AnnouncementCard } from '@/components/shared/AnnouncementCard';
+import { FilterControls } from '@/components/shared/FilterControls';
+import { getActivities, getAnnouncements, getModalities } from '@/lib/actions/data';
+import type { Activity, Announcement } from '@/types';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent } from '@/components/ui/card';
 

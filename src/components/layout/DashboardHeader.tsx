@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { LogOut, UserCircle } from 'lucide-react';
-import type { User } from '@/lib/types';
+import type { User } from '@/types';
 
 interface DashboardHeaderProps {
   user: User;

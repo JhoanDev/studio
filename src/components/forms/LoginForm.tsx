@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { findUserByEmail } from '@/lib/data';
+import { findUserByEmail } from '@/lib/actions/data';
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 

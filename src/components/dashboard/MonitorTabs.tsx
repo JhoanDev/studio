@@ -4,8 +4,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import type { Activity, Announcement, User } from '@/lib/types';
-import { addActivity, updateActivity, deleteActivity, addAnnouncement, updateAnnouncement, deleteAnnouncement } from '@/lib/data';
+import type { Activity, Announcement, User } from '@/types';
+import { addActivity, updateActivity, deleteActivity, addAnnouncement, updateAnnouncement, deleteAnnouncement } from '@/lib/actions/data';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -29,10 +29,10 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { ActivityForm } from './ActivityForm';
-import type { ActivityFormValues } from './ActivityForm';
-import { AnnouncementForm } from './AnnouncementForm';
-import type { AnnouncementFormValues } from './AnnouncementForm';
+import { ActivityForm } from '../forms/ActivityForm';
+import type { ActivityFormValues } from '../forms/ActivityForm';
+import { AnnouncementForm } from '../forms/AnnouncementForm';
+import type { AnnouncementFormValues } from '../forms/AnnouncementForm';
 import { useToast } from '@/hooks/use-toast';
 
 interface MonitorTabsProps {

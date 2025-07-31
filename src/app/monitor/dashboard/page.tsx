@@ -3,10 +3,10 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { DashboardHeader } from '@/components/DashboardHeader';
+import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { MonitorTabs } from '@/components/dashboard/MonitorTabs';
-import { getActivities, getAnnouncements, getModalities } from '@/lib/data';
-import type { User, Activity, Announcement } from '@/lib/types';
+import { getActivities, getAnnouncements, getModalities } from '@/lib/actions/data';
+import type { User, Activity, Announcement } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
 
